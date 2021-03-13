@@ -3,7 +3,7 @@ package com.task.manager
 import com.task.manager.model.core
 import com.task.manager.model.core.Process
 import com.task.manager.model.generic.{High, Low, Medium, OrderTypes}
-import com.task.manager.repository.FIFOBaseRepository
+import com.task.manager.repository.{FIFOBaseRepository, ProcessRepository}
 import com.task.manager.repository.RepositoryFactory.RepositoryTypes
 import org.scalatest.{FlatSpec, Matchers}
 import org.mockito.Mockito._
@@ -13,79 +13,79 @@ class TaskManagerSpec extends FlatSpec with Matchers {
   behavior of "unit test for TaskManager with FIFOBaseRepository of a bounded queue with size 2"
 
   "add method for process1 and repository with state ()" should "insert it to repository and then kill nothing" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     val process1: Process = mock(classOf[Process])
-    when(fifoBaseRepository.insert(process1)).thenReturn(Nil)
+    when(processRepository.insert(process1)).thenReturn(Nil)
 
     taskManager.add(process1)
-    verify(fifoBaseRepository).insert(process1)
+    verify(processRepository).insert(process1)
   }
 
   "add method for process2 and repository with state (process1)" should "insert it to repository and then kill the process1" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     val process1: Process = mock(classOf[Process])
     val process2: Process = mock(classOf[Process])
-    when(fifoBaseRepository.insert(process2)).thenReturn(List(process1))
+    when(processRepository.insert(process2)).thenReturn(List(process1))
     when(process1.kill()).thenCallRealMethod()
 
     taskManager.add(process2)
-    verify(fifoBaseRepository).insert(process2)
+    verify(processRepository).insert(process2)
     verify(process1).kill()
   }
 
   "kill method for process with PID = 1 and repository with state (process1)" should "remove it from repository and then kill the process1" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     val process1: Process = mock(classOf[Process])
-    when(fifoBaseRepository.remove("1")).thenReturn(Some(process1))
+    when(processRepository.remove("1")).thenReturn(Some(process1))
     when(process1.kill()).thenCallRealMethod()
 
     taskManager.kill("1")
-    verify(fifoBaseRepository).remove("1")
+    verify(processRepository).remove("1")
     verify(process1).kill()
   }
 
   "killGroup method for process 1, 2 and same priority Low and repository with state (process1, process2)" should "remove them it from repository and then kill the process 1, 2" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     val process1: Process = mock(classOf[Process])
     val process2: Process = mock(classOf[Process])
-    when(fifoBaseRepository.remove(Low)).thenReturn(List(process1, process2))
+    when(processRepository.remove(Low)).thenReturn(List(process1, process2))
     when(process1.kill()).thenCallRealMethod()
 
     taskManager.killGroup(Low)
-    verify(fifoBaseRepository).remove(Low)
+    verify(processRepository).remove(Low)
     verify(process1).kill()
     verify(process2).kill()
   }
 
   "killAll method with repository with state (process1, process2)" should "remove them it from repository and then kill the process 1, 2" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     val process1: Process = mock(classOf[Process])
     val process2: Process = mock(classOf[Process])
-    when(fifoBaseRepository.removeAll()).thenReturn(List(process1, process2))
+    when(processRepository.removeAll()).thenReturn(List(process1, process2))
     when(process1.kill()).thenCallRealMethod()
 
     taskManager.killAll()
-    verify(fifoBaseRepository).removeAll()
+    verify(processRepository).removeAll()
     verify(process1).kill()
     verify(process2).kill()
   }
 
   "list method with PID priority with repository with state (process1, process2)" should "return process1, 2 in order" in {
-    val fifoBaseRepository: FIFOBaseRepository =
-      mock(classOf[FIFOBaseRepository])
-    val taskManager: TaskManager = new TaskManager(fifoBaseRepository)
+    val processRepository: ProcessRepository =
+      mock(classOf[ProcessRepository])
+    val taskManager: TaskManager = new TaskManager(processRepository)
     taskManager.list(OrderTypes.OrderByPID)
-    verify(fifoBaseRepository).get(OrderTypes.OrderByPID)
+    verify(processRepository).get(OrderTypes.OrderByPID)
   }
 
 }
