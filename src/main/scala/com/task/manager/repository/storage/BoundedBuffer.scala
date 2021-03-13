@@ -2,7 +2,7 @@ package com.task.manager.repository.storage
 
 import scala.collection.mutable.ListBuffer
 
-class BoundedBuffer[A] private (capacity: Int, listBuffer: ListBuffer[A]) {
+class BoundedBuffer[A](capacity: Int, listBuffer: ListBuffer[A]) {
 
   def isFull: Boolean = listBuffer.length >= capacity
 

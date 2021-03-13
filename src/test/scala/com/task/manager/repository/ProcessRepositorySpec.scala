@@ -10,9 +10,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class FIFOBaseRepositorySpec extends FlatSpec with Matchers {
 
   behavior of "FIFOBaseRepository with bounded queue with size 2"
-  val fifoBaseRepository = new FIFOBaseRepository(
-    new BoundedQueue[ProcessDAO](2)
-  )
+  val fakeBoundedQueue = new BoundedQueue[ProcessDAO](2)
+  val fifoBaseRepository = new FIFOBaseRepository(fakeBoundedQueue)
   "insert new process with PID = 1, Priority = High" should "accept processes and do not dequeue any process" in {
     fifoBaseRepository.insert(Process("1", High)) shouldBe List.empty[Process]
   }
@@ -69,7 +68,9 @@ class FIFOBaseRepositorySpec extends FlatSpec with Matchers {
 class DefaultRepositorySpec extends FlatSpec with Matchers {
 
   behavior of "DefaultRepository with bounded buffer with size 2"
-  val defaultRepository = new DefaultRepository(BoundedBuffer(2))
+  val fakeBoundedBuffer: BoundedBuffer[ProcessDAO] =
+    BoundedBuffer[ProcessDAO](2)
+  val defaultRepository = new DefaultRepository(fakeBoundedBuffer)
 
   "insert new process with PID = 1, Priority = High" should "accept processes and do not dequeue any process" in {
     defaultRepository.insert(core.Process("1", High)) shouldBe List
@@ -126,7 +127,9 @@ class DefaultRepositorySpec extends FlatSpec with Matchers {
 class PriorityRepositorySpec extends FlatSpec with Matchers {
 
   behavior of "PriorityRepository with bounded buffer with size 2"
-  val priorityRepository = new PriorityRepository(BoundedBuffer(2))
+  val fakeBoundedBuffer: BoundedBuffer[ProcessDAO] =
+    BoundedBuffer[ProcessDAO](2)
+  val priorityRepository = new PriorityRepository(fakeBoundedBuffer)
 
   "insert new process with PID = 1, Priority = High" should "accept processes and do not dequeue any process" in {
     priorityRepository.insert(core.Process("1", High)) shouldBe List
